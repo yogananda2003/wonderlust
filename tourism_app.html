@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wanderlust AI</title>
+    <!-- Import Google Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* --- MODERN RESET & VARIABLES --- */
+        :root {
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --secondary-gradient: linear-gradient(120deg, #f6d365 0%, #fda085 100%);
+            --glass-bg: rgba(255, 255, 255, 0.6);
+            --glass-border: 1px solid rgba(255, 255, 255, 0.6);
+            --shadow-sm: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+            --text-main: #2d3748;
+            --text-light: #718096;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            /* New Background: Soft Clouds/Sky for a dreamy travel vibe */
+            background: url('https://images.unsplash.com/photo-1534067783741-5147530f900d?q=80&w=2070&auto=format&fit=crop') no-repeat center center fixed;
+            background-size: cover;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+            color: var(--text-main);
+            position: relative;
+        }
+
+        /* Overlay to ensure the theme stays light and text remains readable */
+        body::before {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(240, 248, 255, 0.8); /* Light AliceBlue tint */
+            z-index: -1;
+            backdrop-filter: blur(5px); /* Soft blur on the background image */
+        }
+
+        /* --- MAIN CONTAINER --- */
+        .app-container {
+            width: 100%;
+            height: 100vh;
+            background: rgba(255, 255, 255, 0.25); /* High transparency for glass effect */
+            backdrop-filter: blur(20px); /* Strong blur for the glass panel */
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        /* --- HEADER --- */
+        .header {
+            padding: 20px;
+            text-align: center;
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.5);
+            font-weight: 700;
+            font-size: 22px;
+            letter-spacing: -0.5px;
+            background: -webkit-linear-gradient(45deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            z-index: 10;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+        }
+
+        /* --- CHAT AREA --- */
+        .chat-area {
+            flex: 1;
+            padding: 20px 15%; /* Wide padding for desktop focus */
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            scroll-behavior: smooth;
+            padding-bottom: 120px; /* Space for floating input */
+        }
+
+        @media (max-width: 768px) {
+            .chat-area { padding: 20px 5%; }
+        }
+
+        /* --- BUBBLES --- */
+        .message {
+            max-width: 650px;
+            padding: 20px 25px;
+            border-radius: 24px;
+            font-size: 15px;
+            line-height: 1.6;
+            position: relative;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.04);
+            animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .ai-msg { 
+            align-self: flex-start; 
+            background-color: rgba(255, 255, 255, 0.8); 
+            border: var(--glass-border);
+            border-bottom-left-radius: 4px;
+            backdrop-filter: blur(5px);
+        }
+        
+        .user-msg { 
+            align-self: flex-end; 
+            background: var(--primary-gradient);
+            color: white; 
+            border-bottom-right-radius: 4px;
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* --- WEATHER WIDGET --- */
+        .weather-card {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 24px;
+            padding: 25px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 15px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.08);
+            border: 1px solid white;
+            max-width: 450px;
+            transition: transform 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+        
+        .weather-card:hover { transform: translateY(-3px); }
+
+        .temp-section { display: flex; align-items: center; gap: 18px; }
+        .temp-icon { font-size: 48px; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1)); }
+        
+        .temp-val { 
+            font-size: 42px; 
+            font-weight: 700; 
+            color: var(--text-main); 
+            letter-spacing: -1px; 
+        }
+        
+        .weather-details { text-align: right; }
+        .weather-desc { font-weight: 600; font-size: 16px; color: var(--text-light); display: block; margin-bottom: 5px; }
+        
+        .rain-tag { 
+            font-size: 13px; 
+            color: #fff; 
+            font-weight: 600; 
+            background: var(--secondary-gradient); 
+            padding: 6px 12px; 
+            border-radius: 20px;
+            display: inline-block;
+            box-shadow: 0 4px 10px rgba(246, 211, 101, 0.4);
+        }
+
+        /* --- PLACES CAROUSEL --- */
+        .places-label {
+            font-size: 12px; 
+            font-weight: 700; 
+            color: var(--text-main); 
+            margin: 15px 0 10px 5px;
+            text-transform: uppercase; 
+            letter-spacing: 1px;
+            opacity: 0.8;
+        }
+
+        .places-container {
+            display: flex;
+            gap: 20px;
+            overflow-x: auto;
+            padding: 10px 10px 30px 10px;
+            scroll-snap-type: x mandatory;
+        }
+        
+        .place-card {
+            min-width: 220px;
+            height: 280px;
+            border-radius: 24px;
+            position: relative;
+            overflow: hidden;
+            background-color: #f0f2f5;
+            flex-shrink: 0;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            scroll-snap-align: center;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            cursor: pointer;
+            border: 4px solid white;
+        }
+        
+        .place-card:hover { 
+            transform: translateY(-8px) scale(1.02); 
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+        }
+        
+        .place-card img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s; }
+        .place-card:hover img { transform: scale(1.1); }
+
+        .place-info {
+            position: absolute; bottom: 0; left: 0; right: 0;
+            background: linear-gradient(to top, rgba(0,0,0,0.8) 10%, rgba(0,0,0,0) 100%);
+            padding: 80px 20px 20px 20px;
+            color: white; 
+            display: flex; 
+            flex-direction: column; 
+            justify-content: flex-end;
+        }
+
+        .place-name { font-weight: 700; font-size: 18px; line-height: 1.2; margin-bottom: 6px; }
+        .place-category { 
+            font-size: 11px; 
+            background: rgba(255,255,255,0.25); 
+            padding: 4px 12px; 
+            border-radius: 20px; 
+            backdrop-filter: blur(4px); 
+            align-self: flex-start; 
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* --- FLOATING INPUT AREA --- */
+        .input-wrapper {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90%;
+            max-width: 700px;
+            z-index: 20;
+        }
+
+        .input-area {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(15px);
+            border-radius: 50px;
+            padding: 8px;
+            display: flex;
+            align-items: center;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            border: 1px solid rgba(255,255,255,0.8);
+            transition: transform 0.2s;
+        }
+        
+        .input-area:focus-within { transform: scale(1.01); box-shadow: 0 25px 50px rgba(118, 75, 162, 0.15); }
+
+        input {
+            flex: 1; 
+            padding: 15px 25px; 
+            border: none;
+            outline: none; 
+            background: transparent; 
+            font-size: 16px; 
+            color: var(--text-main);
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        input::placeholder { color: #a0aec0; }
+
+        button {
+            background: var(--primary-gradient); 
+            color: white; 
+            border: none; 
+            border-radius: 50%;
+            width: 50px; 
+            height: 50px; 
+            cursor: pointer; 
+            font-size: 20px;
+            display: flex; 
+            align-items: center; 
+            justify-content: center;
+            transition: transform 0.2s, box-shadow 0.3s; 
+            box-shadow: 0 4px 15px rgba(118, 75, 162, 0.3);
+            margin-right: 5px;
+        }
+        button:hover { transform: scale(1.05); box-shadow: 0 6px 20px rgba(118, 75, 162, 0.4); }
+        button:active { transform: scale(0.95); }
+
+        /* Typing Animation */
+        .typing-indicator { display: inline-flex; gap: 5px; padding: 8px 4px; }
+        .typing-dot { width: 6px; height: 6px; background: #cbd5e0; border-radius: 50%; animation: bounce 1.4s infinite ease-in-out; }
+        .typing-dot:nth-child(1) { animation-delay: -0.32s; }
+        .typing-dot:nth-child(2) { animation-delay: -0.16s; }
+        @keyframes bounce { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1); } }
+        
+        /* Scrollbar styling */
+        .places-container::-webkit-scrollbar { height: 0; } /* Hide scrollbar */
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        <div class="header">Wanderlust AI</div>
+        
+        <div class="chat-area" id="chatBox">
+            <div class="message ai-msg">
+                <strong>Hello, traveler!</strong> 🌍 <br>
+                I'm ready to plan. Try asking: <br>
+                <span style="color: #764ba2; font-size: 0.9em;">"Weather in Bali"</span> or <span style="color: #764ba2; font-size: 0.9em;">"Places to see in Kyoto"</span>.
+            </div>
+        </div>
+
+        <div class="input-wrapper">
+            <div class="input-area">
+                <input type="text" id="queryInput" placeholder="Where do you want to go next?..." autocomplete="off">
+                <button id="sendBtn">➜</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- DOM ELEMENTS ---
+        const chatBox = document.getElementById('chatBox');
+        const queryInput = document.getElementById('queryInput');
+        const sendBtn = document.getElementById('sendBtn');
+
+        // --- EVENT LISTENERS ---
+        sendBtn.addEventListener('click', handleSearch);
+        queryInput.addEventListener('keypress', (e) => { if(e.key === 'Enter') handleSearch(); });
+
+        // --- MAIN LOGIC ---
+        async function handleSearch() {
+            const query = queryInput.value.trim();
+            if (!query) return;
+
+            // 1. UI: Show User Message
+            addMessage(query, 'user-msg');
+            queryInput.value = '';
+            
+            // 2. Intent Detection
+            const intent = detectIntent(query);
+
+            // 3. UI: Show Loading Indicator
+            const loadingId = addLoadingMessage();
+
+            try {
+                // 4. Logic: Extract City Name
+                let cityName = extractCityName(query);
+                
+                // 5. API: Geocode
+                const locationData = await getCoordinates(cityName);
+                
+                if (!locationData) {
+                    updateLoadingMessage(loadingId, `Sorry, I couldn't find "${cityName}". Try a major city name.`);
+                    return;
+                }
+
+                updateLoadingMessage(loadingId, `Scouting ${intent} info for ${locationData.name}...`);
+
+                // 6. API: Conditional Fetching based on Intent
+                let weatherPromise = Promise.resolve(null);
+                let placesPromise = Promise.resolve([]);
+
+                if (intent === 'weather' || intent === 'full') {
+                    weatherPromise = getWeather(locationData.lat, locationData.lon);
+                }
+                
+                if (intent === 'places' || intent === 'full') {
+                    placesPromise = getPlaces(locationData.lat, locationData.lon);
+                }
+
+                const [weather, places] = await Promise.all([weatherPromise, placesPromise]);
+
+                // 7. UI: Build Final Response
+                const resultHTML = buildResultCard(locationData.name, weather, places, intent);
+                
+                const loader = document.getElementById(loadingId);
+                loader.outerHTML = resultHTML;
+                scrollToBottom();
+
+            } catch (error) {
+                console.error(error);
+                updateLoadingMessage(loadingId, "⚠️ Network error. Please check your connection.");
+            }
+        }
+
+        // --- LOGIC: INTENT & EXTRACTION (Kept exactly as requested) ---
+        function detectIntent(query) {
+            const q = query.toLowerCase();
+            const weatherKeywords = ['weather', 'temp', 'temperature', 'hot', 'cold', 'rain', 'forecast', 'climate', 'sunny'];
+            const placesKeywords = ['place', 'places', 'visit', 'attraction', 'museum', 'site', 'spot', 'monument', 'tour', 'see'];
+            
+            const asksWeather = weatherKeywords.some(k => q.includes(k));
+            const asksPlaces = placesKeywords.some(k => q.includes(k));
+
+            if (asksWeather && asksPlaces) return 'full';
+            if (asksWeather) return 'weather';
+            if (asksPlaces) return 'places';
+            
+            return 'full';
+        }
+
+        function extractCityName(input) {
+            const stopWords = [' in ', ' to ', ' at ', ' for ', ' near '];
+            let clean = input.toLowerCase();
+            for (let word of stopWords) {
+                if (clean.includes(word)) return clean.split(word)[1].replace(/[?.!]/g, '').trim();
+            }
+            return input.replace(/[?.!]/g, '').trim();
+        }
+
+        // --- API CLIENTS ---
+        async function getCoordinates(city) {
+            try {
+                const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(city)}&limit=1`;
+                const res = await fetch(url, { headers: { 'User-Agent': 'StudentTravelApp/1.0' }});
+                const data = await res.json();
+                if (data && data.length > 0) {
+                    return { lat: data[0].lat, lon: data[0].lon, name: data[0].display_name.split(',')[0] };
+                }
+                return null;
+            } catch (e) { return null; }
+        }
+
+        async function getWeather(lat, lon) {
+            try {
+                const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&daily=temperature_2m_max,precipitation_probability_max&timezone=auto`;
+                const res = await fetch(url);
+                const data = await res.json();
+                const daily = data.daily;
+                if (daily) {
+                    const temp = Math.round(daily.temperature_2m_max[0]);
+                    const rain = daily.precipitation_probability_max[0];
+                    let desc = "Sunny";
+                    if(rain > 50) desc = "Rainy"; else if(rain > 20) desc = "Cloudy"; else if(temp > 30) desc = "Hot";
+                    return { temp, rain, desc };
+                }
+                return null;
+            } catch (e) { return null; }
+        }
+
+        async function getPlaces(lat, lon) {
+            try {
+                const query = `[out:json][timeout:10];(node["tourism"="attraction"](around:5000,${lat},${lon});way["tourism"="attraction"](around:5000,${lat},${lon});node["tourism"="museum"](around:5000,${lat},${lon}););out 5 center;`;
+                const url = `https://overpass-api.de/api/interpreter?data=${encodeURIComponent(query)}`;
+                const res = await fetch(url);
+                const data = await res.json();
+                const places = [];
+                if (data.elements) {
+                    for (let el of data.elements) {
+                        const name = el.tags.name;
+                        if (name) {
+                            const category = el.tags.tourism || 'Attraction';
+                            const imageUrl = await getImage(name, category);
+                            places.push({ name, category, image: imageUrl });
+                        }
+                    }
+                }
+                return places;
+            } catch (e) { return []; }
+        }
+
+        async function getImage(query, category = 'generic') {
+            try {
+                const url = `https://en.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(query)}&gsrlimit=1&prop=pageimages&piprop=thumbnail&pithumbsize=400&format=json&origin=*`;
+                const res = await fetch(url);
+                const data = await res.json();
+                if (data.query && data.query.pages) {
+                    const pageId = Object.keys(data.query.pages)[0];
+                    if (data.query.pages[pageId].thumbnail) return data.query.pages[pageId].thumbnail.source;
+                }
+            } catch (e) { }
+            return getFallbackImage(category);
+        }
+
+        function getFallbackImage(category) {
+            const cat = category.toLowerCase();
+            if (cat.includes('museum') || cat.includes('history')) return 'https://images.unsplash.com/photo-1566127444979-b3d2b654e3d7?q=80&w=400&auto=format&fit=crop';
+            if (cat.includes('nature') || cat.includes('park')) return 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?q=80&w=400&auto=format&fit=crop';
+            return 'https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?q=80&w=400&auto=format&fit=crop';
+        }
+
+        // --- UI HELPERS ---
+        function addMessage(text, type) {
+            const div = document.createElement('div');
+            div.className = `message ${type}`;
+            div.innerHTML = text;
+            chatBox.appendChild(div);
+            scrollToBottom();
+        }
+
+        function addLoadingMessage() {
+            const id = 'msg-' + Date.now();
+            const div = document.createElement('div');
+            div.className = 'message ai-msg';
+            div.id = id;
+            div.innerHTML = `<div class="typing-indicator"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div>`;
+            chatBox.appendChild(div);
+            scrollToBottom();
+            return id;
+        }
+
+        function updateLoadingMessage(id, text) {
+            const el = document.getElementById(id);
+            if(el) el.innerHTML = text;
+        }
+
+        function scrollToBottom() { 
+            chatBox.scrollTop = chatBox.scrollHeight; 
+        }
+
+        function buildResultCard(location, weather, places, intent) {
+            let html = `<div class="message ai-msg">Here is the intel for <strong>${location}</strong>:`;
+
+            // Weather Section
+            if (weather) {
+                html += `
+                <div class="weather-card">
+                    <div class="temp-section">
+                        <span class="temp-icon">${getWeatherIcon(weather.desc)}</span>
+                        <span class="temp-val">${weather.temp}°</span>
+                    </div>
+                    <div class="weather-details">
+                        <span class="weather-desc">${weather.desc}</span>
+                        <span class="rain-tag">☔ ${weather.rain}% Rain</span>
+                    </div>
+                </div>`;
+            }
+
+            // Places Section
+            if (intent === 'places' || intent === 'full') {
+                if (places && places.length > 0) {
+                    html += `<div class="places-label">Top Spots</div>`;
+                    html += `<div class="places-container">`;
+                    places.forEach(p => {
+                        html += `
+                        <div class="place-card">
+                            <img src="${p.image}" alt="${p.name}" loading="lazy">
+                            <div class="place-info">
+                                <div class="place-name">${p.name}</div>
+                                <div class="place-category">${p.category}</div>
+                            </div>
+                        </div>`;
+                    });
+                    html += `</div>`;
+                } else {
+                    html += `<div style="margin-top:15px; color:#718096; font-style:italic;">No specific attractions found nearby.</div>`;
+                }
+            }
+
+            html += `</div>`;
+            return html;
+        }
+
+        function getWeatherIcon(desc) {
+            if (desc.includes('Rain')) return '🌧️';
+            if (desc.includes('Cloud')) return '☁️';
+            if (desc.includes('Hot')) return '☀️';
+            return '🌤️';
+        }
+    </script>
+</body>
+</html>
